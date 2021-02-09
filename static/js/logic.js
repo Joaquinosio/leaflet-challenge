@@ -15,32 +15,59 @@ L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 }).addTo(myMap);
 
 // Load in GeoJson data
-var geoData = "static/data/all_week.geojson";
-var geojson;
+// var geoData = "static/data/all_week.geojson";
+// var geojson;
+
+function chooseColor(magnitude) {
+  switch (true) {
+  case magnitude >4.5:
+    return "red";
+  case magnitude >2.5:
+    return "orange";
+  case magnitude >1:
+    return "yellow";
+  case magnitude >0:
+    return "green";
+  }
+}
+
 
 // Grab data with d3
-d3.json(geoData, function(data) {
-
+d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson", function(data) {
+  // console.log(data)
   // Create a new choropleth layer
-  geojson = L.HeatLayer(data, {
+  geojson = L.geoJson(data, {
+    pointToLayer: function(feature, latlng) {
+      return L.circleMarker(latlng);
+  },
+    style: function(feature) {
+      return {
+        // Call the chooseColor function to decide which color to color our neighborhood (color based on borough)
+        fillColor: chooseColor(feature.properties.mag),
+        fillOpacity: 1,
+        weight: 1.5,
+        radius: feature.properties.mag*5
+      }
+    }
+  
+  }).addTo(myMap); 
 
     // Define what  property in the features to use
-    valueProperty: "rms",
-
+    
     // Set color scale
-    scale: ["#ffffb2", "#b10026"],
+    // scale: ["#ffffb2", "#b10026"],
 
-    // Number of breaks in step range
-    steps: 10,
+    // // Number of breaks in step range
+    // steps: 10,
 
-    // q for quartile, e for equidistant, k for k-means
-    mode: "q",
-    style: {
-      // Border color
-      color: "#fff",
-      weight: 1,
-      fillOpacity: 0.8
-    },
-  }).addTo(myMap);
+    // // q for quartile, e for equidistant, k for k-means
+    // mode: "q",
+    // style: {
+    //   // Border color
+    //   color: "#fff",
+    //   weight: 1,
+    //   fillOpacity: 0.8
+    // },
+  })
 
-});
+
